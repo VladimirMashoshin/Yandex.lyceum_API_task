@@ -9,7 +9,7 @@ import sys
 # в формате param=value, param2=value2,...
 
 
-def map_request(point=None, map_type="map", **kwargs):
+def map_request(point=None, map_type="map", flags=[], **kwargs):
     url = "http://static-maps.yandex.ru/1.x/"
     params = kwargs
     if point:
@@ -19,6 +19,8 @@ def map_request(point=None, map_type="map", **kwargs):
             ll = ','.join(map(str, point))
         params['ll'] = ll
     params['l'] = map_type
+    if len(flags) != 0:
+        params['pt'] = "~".join(flags)
     response = requests.get(url, params=params)
     if not response:
         print("Ошибка выполнения запроса:")

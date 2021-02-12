@@ -36,12 +36,13 @@ def geocode(address):
 def get_coordinates(address):
     toponym = geocode(address)
     if not toponym:
+        # raise NotADirectoryError("Такого места не существует!")
         return None, None
 
     # Координаты центра топонима:
-    toponym_coodrinates = toponym["Point"]["pos"]
+    toponym_coordinates = toponym["Point"]["pos"]
     # Широта, преобразованная в плавающее число:
-    toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+    toponym_longitude, toponym_lattitude = toponym_coordinates.split(" ")
     return float(toponym_longitude), float(toponym_lattitude)
 
 

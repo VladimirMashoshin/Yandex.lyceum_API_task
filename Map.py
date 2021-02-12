@@ -1,4 +1,5 @@
 from maps.mapapi import map_request
+from maps.geocoder import geocode, get_coordinates
 import sys
 import os
 import pygame
@@ -14,6 +15,8 @@ class Map:
         self.params = {'ll': (36.192640, 51.730894), 'spn': (0.05, 0.05), 'l': 'map'}
         self.map_file = "map.png"
         self.info_loaded = False
+        self.flags = []
+        self.cnt_flags = 0
         self.request()
 
     # создание интерфейса
@@ -59,7 +62,7 @@ class Map:
         new_long, new_lat = moves[move](long, lat, long_spn, lat_spn)
         self.params['ll'] = new_long, new_lat
         self.update_ui()
-        self.on_search()
+        self.request()
 
     def move_right(self, long, lat, long_spn, lat_spn):
         new_long = long + long_spn * 2
@@ -83,7 +86,7 @@ class Map:
         k = 2
         self.params['spn'] = tuple(map(lambda x: x / k, self.params['spn']))
         self.update_ui()
-        self.on_search()
+        self.request()
 
     # клавиша page_down - отдалим карту
 
@@ -91,7 +94,7 @@ class Map:
         k = 2
         self.params['spn'] = tuple(map(lambda x: x * k, self.params['spn']))
         self.update_ui()
-        self.on_search()
+        self.request()
 
     # из параметров в self.params заполняем поля в интерфейсе
     def update_ui(self):
@@ -107,7 +110,7 @@ class Map:
     def request(self):
         spn = self.coord_to_string(self.params['spn'])
         ll = self.coord_to_string(self.params['ll'])
-        image = map_request(ll, self.params['l'], spn=spn)
+        image = map_request(ll, self.params['l'], spn=spn, flags=self.flags)
         self.update_map(image)
 
     # обновление файла с картой
@@ -123,7 +126,19 @@ class Map:
 
     # действие при нажатии  кнопки поиска
     def on_search(self):
-        self.update_data()
+        new_params = get_coordinates(self.search_input.text)
+        # print(new_params)
+        if new_params[0] is None and new_params[1] is None:
+            print("Заданного места к сожалению не найдено!")
+        else:
+            self.params['ll'] = new_params
+            if self.cnt_flags == 100:
+                self.flags.pop(0)
+            else:
+                self.cnt_flags += 1
+            new_params = [str(coord) for coord in new_params]
+            self.flags.append(",".join(new_params))
+        self.update_ui()
         self.request()
 
     # дисперчер обработки нажатия клавиш пользователем

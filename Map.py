@@ -136,7 +136,7 @@ class Map:
     def on_search(self):
         new_params, address = get_coordinates(self.search_input.text)
         # print(new_params)
-        if new_params[0] is None and new_params[1] is None:
+        if new_params is None:
             print("Заданного места к сожалению не найдено!")
         else:
             self.params['ll'] = new_params

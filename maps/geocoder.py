@@ -25,6 +25,8 @@ def geocode(address):
     # Получаем первый топоним из ответа геокодера.
     # Согласно описанию ответа он находится по следующему пути:
     features = json_response["response"]["GeoObjectCollection"]["featureMember"]
+    if len(features) == 0:
+        return None, None
     components = json_response["response"]["GeoObjectCollection"]["featureMember"][0]
     components = components["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]
     components = components["Components"]

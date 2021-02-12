@@ -26,20 +26,24 @@ class Map:
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 0, 100, 30), manager=manager, text="Координаты:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 50, 100, 30), manager=manager, text="Масштаб:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 100, 100, 30), manager=manager, text="Поиск:")
+        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 150, 100, 30), manager=manager, text="Адрес:")
 
         self.coords_input = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect(110, 0, width / 2, height / 2),
+            relative_rect=pygame.Rect(110, 0, width * 3 / 4, height / 2),
             manager=manager)
-        self.spn_input = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect(110, 50, width / 2, height / 2),
-                                                             manager=manager)
+        self.spn_input = pygame_gui.elements.UITextEntryLine(
+            relative_rect=pygame.Rect(110, 50, width * 3 / 4, height / 2),
+            manager=manager)
         self.search_input = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect(110, 100, width / 2, height / 2),
+            relative_rect=pygame.Rect(110, 100, width * 3 / 4, height / 2),
             manager=manager)
-
-        self.search_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 150), (100, 40)),
+        self.address_input = pygame_gui.elements.UITextEntryLine(
+            relative_rect=pygame.Rect(110, 150, width * 3 / 4, height / 2),
+            manager=manager)
+        self.search_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 200), (100, 40)),
                                                           text='Искать',
                                                           manager=manager)
-        self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 150), (400, 40)),
+        self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((200, 200), (250, 40)),
                                                          text='Сброс поискового результата',
                                                          manager=manager)
         self.update_ui()
@@ -130,7 +134,7 @@ class Map:
 
     # действие при нажатии  кнопки поиска
     def on_search(self):
-        new_params = get_coordinates(self.search_input.text)
+        new_params, address = get_coordinates(self.search_input.text)
         # print(new_params)
         if new_params[0] is None and new_params[1] is None:
             print("Заданного места к сожалению не найдено!")
@@ -142,6 +146,7 @@ class Map:
                 self.cnt_flags += 1
             new_params = [str(coord) for coord in new_params]
             self.flags.append(",".join(new_params))
+            self.address_input.set_text(address)
         self.update_ui()
         self.request()
 
@@ -165,6 +170,7 @@ class Map:
                     self.params['ll'] = self.started_params['ll']
                     self.params['spn'] = self.started_params['spn']
                     self.search_input.text = ''
+                    self.address_input.text = ''
                     self.update_ui()
                     self.request()
         elif event.type == pygame.KEYUP:
@@ -173,7 +179,7 @@ class Map:
     # отрисовка класса (в данный момент только отрисовывает карту)
     def draw(self):
         if self.info_loaded:
-            self.screen.blit(pygame.image.load(self.map_file), (0, 200))
+            self.screen.blit(pygame.image.load(self.map_file), (0, 250))
 
     def __del__(self):
         if os.path.isfile(self.map_file):

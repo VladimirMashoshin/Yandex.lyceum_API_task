@@ -5,11 +5,10 @@ from Map import Map
 if __name__ == '__main__':
 
     pygame.init()
-    pygame.display.set_caption('')
+    pygame.display.set_caption("Yandex.Lyceum maps")
     width, height = 1024, 768
     size = width, height
     manager = pygame_gui.UIManager(size)
-
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
     running = True

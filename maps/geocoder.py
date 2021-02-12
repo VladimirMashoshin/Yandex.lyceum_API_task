@@ -22,19 +22,26 @@ def geocode(address):
             f"""Ошибка выполнения запроса:
             {geocoder_request}
             Http статус: {response.status_code} ({response.reason})""")
-
     # Получаем первый топоним из ответа геокодера.
     # Согласно описанию ответа он находится по следующему пути:
     features = json_response["response"]["GeoObjectCollection"]["featureMember"]
+    components = json_response["response"]["GeoObjectCollection"]["featureMember"][0]
+    components = components["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]
+    components = components["Components"]
+    full_adress = ""
+    for i in range(len(components)):
+        full_adress += components[i]["name"]
+        if (i != len(components) - 1):
+            full_adress += ", "
     if features:
-        return features[0]["GeoObject"]
+        return features[0]["GeoObject"], full_adress
     else:
-        return None
+        return None, None
 
 
 # Получаем координаты объекта по его адресу.
 def get_coordinates(address):
-    toponym = geocode(address)
+    toponym, full_address = geocode(address)
     if not toponym:
         # raise NotADirectoryError("Такого места не существует!")
         return None, None
@@ -43,7 +50,7 @@ def get_coordinates(address):
     toponym_coordinates = toponym["Point"]["pos"]
     # Широта, преобразованная в плавающее число:
     toponym_longitude, toponym_lattitude = toponym_coordinates.split(" ")
-    return float(toponym_longitude), float(toponym_lattitude)
+    return (float(toponym_longitude), float(toponym_lattitude)), full_address
 
 
 # Получаем параметры объекта для рисования карты вокруг него.

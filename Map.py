@@ -12,6 +12,7 @@ class Map:
         self.manager = manager
         self.width = width
         self.height = height
+        self.started_params = {'ll': (36.192640, 51.730894), 'spn': (0.05, 0.05)}
         self.params = {'ll': (36.192640, 51.730894), 'spn': (0.05, 0.05), 'l': 'map'}
         self.map_file = "map.png"
         self.info_loaded = False
@@ -38,6 +39,9 @@ class Map:
         self.search_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 150), (100, 40)),
                                                           text='Искать',
                                                           manager=manager)
+        self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 150), (400, 40)),
+                                                         text='Сброс поискового результата',
+                                                         manager=manager)
         self.update_ui()
 
     # служебный метод - преобразует координаты вида (10.2345,10.23456) в строку '10.2345,10.23456'
@@ -155,6 +159,14 @@ class Map:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.search_button:
                     self.on_search()
+                if event.ui_element == self.reset_button:
+                    self.flags = []
+                    self.cnt_flags = 0
+                    self.params['ll'] = self.started_params['ll']
+                    self.params['spn'] = self.started_params['spn']
+                    self.search_input.text = ''
+                    self.update_ui()
+                    self.request()
         elif event.type == pygame.KEYUP:
             self.on_key_pressed(event.key)
 

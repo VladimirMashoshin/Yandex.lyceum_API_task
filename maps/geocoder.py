@@ -3,7 +3,7 @@ import requests
 API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
 
 
-def geocode(address):
+def geocode(address, show_postal_code):
     # Собираем запрос для геокодера.
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/"
     geocoder_params = {
@@ -29,21 +29,27 @@ def geocode(address):
         return None, None
     components = json_response["response"]["GeoObjectCollection"]["featureMember"][0]
     components = components["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]
+    if "postal_code" in components:
+        postal_code = components["postal_code"]
+    else:
+        postal_code = None
     components = components["Components"]
     full_adress = ""
     for i in range(len(components)):
         full_adress += components[i]["name"]
         if (i != len(components) - 1):
             full_adress += ", "
+    if show_postal_code and postal_code:
+        full_adress += ", Почтовый индекс: " + postal_code
     if features:
         return features[0]["GeoObject"], full_adress
     else:
         return None, None
 
 
-# Получаем координаты объекта по его адресу.
-def get_coordinates(address):
-    toponym, full_address = geocode(address)
+# Получаем координаты объекта по его адресу и его полный адрес.
+def get_coordinates(address, show_postal_code):
+    toponym, full_address = geocode(address, show_postal_code)
     if not toponym:
         # raise NotADirectoryError("Такого места не существует!")
         return None, None

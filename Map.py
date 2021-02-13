@@ -19,7 +19,7 @@ class Map:
         self.flags = []
         self.cnt_flags = 0
         self.show_postal_code = True
-        self.last_request = ""
+        self.last_postal_code = ""
         self.request()
 
     # создание интерфейса
@@ -138,23 +138,22 @@ class Map:
         self.info_loaded = True
 
     # действие при нажатии  кнопки поиска
-    def on_search(self, request_last_search=False):
-        if request_last_search:
-            new_params, address = get_coordinates(self.last_request, self.show_postal_code)
-        else:
-            new_params, address = get_coordinates(self.search_input.text, self.show_postal_code)
+    def on_search(self):
+        new_params, address, postal_code = get_coordinates(self.search_input.text)
         if new_params is None:
             print("Заданного места к сожалению не найдено!")
         else:
             self.params['ll'] = new_params
+            self.last_postal_code = postal_code
             if self.cnt_flags == 100:
                 self.flags.pop(0)
             else:
                 self.cnt_flags += 1
             new_params = [str(coord) for coord in new_params]
             self.flags.append(",".join(new_params))
+            if self.show_postal_code:
+                address = address + ", Почтовый индекс: " + self.last_postal_code
             self.address_input.set_text(address)
-            self.last_request = self.search_input.text
         self.update_ui()
         self.request()
 
@@ -179,20 +178,20 @@ class Map:
                     self.params["spn"] = self.started_params["spn"]
                     self.search_input.text = ""
                     self.address_input.text = ""
-                    self.last_request = ""
+                    self.last_postal_code = ""
                     self.update_ui()
                     self.request()
                 if event.ui_element == self.postal_code_switch:
                     if self.show_postal_code:
                         self.show_postal_code = False
                         self.postal_code_switch.set_text("Показать почтовый индекс")
-                        if self.last_request:
-                            self.on_search(request_last_search=True)
+                        full_address = self.address_input.text.split(", Почтовый индекс: ")
+                        self.address_input.set_text(full_address[0])
                     else:
                         self.show_postal_code = True
                         self.postal_code_switch.set_text("Скрыть почтовый индекс")
-                        if self.last_request:
-                            self.on_search(request_last_search=True)
+                        if self.last_postal_code:
+                            self.address_input.set_text(self.address_input.text + ", Почтовый индекс: " + self.last_postal_code)
         elif event.type == pygame.KEYUP:
             self.on_key_pressed(event.key)
 

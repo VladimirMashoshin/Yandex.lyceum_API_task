@@ -29,6 +29,10 @@ def geocode(address):
         return None, None
     components = json_response["response"]["GeoObjectCollection"]["featureMember"][0]
     components = components["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]
+    if "postal_code" in components:
+        postal_code = components["postal_code"]
+    else:
+        postal_code = "не найден"
     components = components["Components"]
     full_adress = ""
     for i in range(len(components)):
@@ -36,23 +40,23 @@ def geocode(address):
         if (i != len(components) - 1):
             full_adress += ", "
     if features:
-        return features[0]["GeoObject"], full_adress
+        return features[0]["GeoObject"], full_adress, postal_code
     else:
-        return None, None
+        return None, None, None
 
 
-# Получаем координаты объекта по его адресу.
+# Получаем координаты объекта по его адресу и его полный адрес с почтовым индексом.
 def get_coordinates(address):
-    toponym, full_address = geocode(address)
+    toponym, full_address, postal_code = geocode(address)
     if not toponym:
         # raise NotADirectoryError("Такого места не существует!")
-        return None, None
+        return None, None, None
 
     # Координаты центра топонима:
     toponym_coordinates = toponym["Point"]["pos"]
     # Широта, преобразованная в плавающее число:
     toponym_longitude, toponym_lattitude = toponym_coordinates.split(" ")
-    return (float(toponym_longitude), float(toponym_lattitude)), full_address
+    return (float(toponym_longitude), float(toponym_lattitude)), full_address, postal_code
 
 
 # Получаем параметры объекта для рисования карты вокруг него.

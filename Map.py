@@ -18,6 +18,8 @@ class Map:
         self.info_loaded = False
         self.flags = []
         self.cnt_flags = 0
+        self.show_postal_code = True
+        self.last_postal_code = ""
         self.request()
 
     # создание интерфейса
@@ -43,9 +45,12 @@ class Map:
         self.search_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 200), (100, 40)),
                                                           text='Искать',
                                                           manager=manager)
-        self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((200, 200), (250, 40)),
+        self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((150, 200), (250, 40)),
                                                          text='Сброс поискового результата',
                                                          manager=manager)
+        self.postal_code_switch = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((450, 200), (300, 45)),
+                                                               text="Скрыть почтовый индекс",
+                                                               manager=manager)
         self.update_ui()
 
     # служебный метод - преобразует координаты вида (10.2345,10.23456) в строку '10.2345,10.23456'
@@ -134,18 +139,20 @@ class Map:
 
     # действие при нажатии  кнопки поиска
     def on_search(self):
-        new_params, address = get_coordinates(self.search_input.text)
-        # print(new_params)
+        new_params, address, postal_code = get_coordinates(self.search_input.text)
         if new_params is None:
             print("Заданного места к сожалению не найдено!")
         else:
             self.params['ll'] = new_params
+            self.last_postal_code = postal_code
             if self.cnt_flags == 100:
                 self.flags.pop(0)
             else:
                 self.cnt_flags += 1
             new_params = [str(coord) for coord in new_params]
             self.flags.append(",".join(new_params))
+            if self.show_postal_code:
+                address = address + ", Почтовый индекс: " + self.last_postal_code
             self.address_input.set_text(address)
         self.update_ui()
         self.request()
@@ -167,12 +174,24 @@ class Map:
                 if event.ui_element == self.reset_button:
                     self.flags = []
                     self.cnt_flags = 0
-                    self.params['ll'] = self.started_params['ll']
-                    self.params['spn'] = self.started_params['spn']
-                    self.search_input.text = ''
-                    self.address_input.text = ''
+                    self.params["ll"] = self.started_params["ll"]
+                    self.params["spn"] = self.started_params["spn"]
+                    self.search_input.text = ""
+                    self.address_input.text = ""
+                    self.last_postal_code = ""
                     self.update_ui()
                     self.request()
+                if event.ui_element == self.postal_code_switch:
+                    if self.show_postal_code:
+                        self.show_postal_code = False
+                        self.postal_code_switch.set_text("Показать почтовый индекс")
+                        full_address = self.address_input.text.split(", Почтовый индекс: ")
+                        self.address_input.set_text(full_address[0])
+                    else:
+                        self.show_postal_code = True
+                        self.postal_code_switch.set_text("Скрыть почтовый индекс")
+                        if self.last_postal_code:
+                            self.address_input.set_text(self.address_input.text + ", Почтовый индекс: " + self.last_postal_code)
         elif event.type == pygame.KEYUP:
             self.on_key_pressed(event.key)
 

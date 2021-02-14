@@ -10,6 +10,8 @@ class Map:
     def __init__(self, screen, manager, width, height):
         self.map_types = ['map', 'sat', 'sat,skl']
         self.map_type = 'map'
+        self.map_pos = (0, 200)
+        self.map_size = (600, 450)
         self.screen = screen
         self.manager = manager
         self.width = width
@@ -176,6 +178,36 @@ class Map:
         self.update_ui()
         self.request()
 
+    def on_click(self, pos):
+        pos_x, pos_y = pos
+        map_x, map_y = self.map_pos
+        width, height = self.map_size
+
+        if map_x <= pos_x <= map_x + width and map_y <= pos_y <= map_y + height:
+            # позиция клика относительно карты в пикселях
+            x, y = pos[0] - self.map_pos[0], pos[1] - self.map_pos[1]
+            # центр карты в пикселях
+            center_x, center_y = width // 2, height // 2
+            # ширина области карты в десятичных градусах
+            width_spn = self.params['spn'][0] * 4
+            # высота области карты в десятичных градусах
+            height_spn = self.params['spn'][1] * 2
+            # переводим пиксели в градусы
+            one_px_x_degree = width_spn / width
+            one_px_y_degree = height_spn / height
+            # смещение в пикселях относительно центра
+            offset_x, offset_y = center_x - x, center_y - y
+            # смещение в градусах относительно центра
+            offset_x_degree = offset_x * one_px_x_degree
+            offset_y_degree = offset_y * one_px_y_degree
+
+            # задаем новые координаты центра (старые -/+ смещение)
+            lon, lat = self.params['ll']
+            new_lon, new_lat = lon - offset_x_degree, lat + offset_y_degree
+            self.params['ll'] = new_lon, new_lat
+            self.update_ui()
+            self.request()
+
     # дисперчер обработки нажатия клавиш пользователем
     def on_key_pressed(self, key):
         valid_actions = {pygame.K_PAGEUP: self.scale_up, pygame.K_PAGEDOWN: self.scale_down,
@@ -213,6 +245,8 @@ class Map:
                             self.address_input.set_text(self.address_input.text + ", Почтовый индекс: " + self.last_postal_code)
         elif event.type == pygame.KEYUP:
             self.on_key_pressed(event.key)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.on_click(event.pos)
 
     # отрисовка класса (в данный момент только отрисовывает карту)
     def draw(self):

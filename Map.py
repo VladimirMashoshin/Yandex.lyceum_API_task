@@ -8,6 +8,8 @@ import pygame_gui
 
 class Map:
     def __init__(self, screen, manager, width, height):
+        self.map_types = ['map', 'sat', 'sat,skl']
+        self.map_type = 'map'
         self.screen = screen
         self.manager = manager
         self.width = width
@@ -24,12 +26,15 @@ class Map:
 
     # создание интерфейса
     def init_ui(self):
+        self.started = True
         manager, width, height = self.manager, self.width, self.height
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 0, 100, 30), manager=manager, text="Координаты:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 50, 100, 30), manager=manager, text="Масштаб:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 100, 100, 30), manager=manager, text="Поиск:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 150, 100, 30), manager=manager, text="Адрес:")
-
+        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 450, 300, 30), manager=manager,
+                                    text="Управление типом карты (кнопки):")
+        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 500, 300, 30), manager=manager, text="1 - гибрид, 2 - спутник, 3 - схема")
         self.coords_input = pygame_gui.elements.UITextEntryLine(
             relative_rect=pygame.Rect(110, 0, width * 3 / 4, height / 2),
             manager=manager)
@@ -48,7 +53,7 @@ class Map:
         self.reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((150, 200), (250, 40)),
                                                          text='Сброс поискового результата',
                                                          manager=manager)
-        self.postal_code_switch = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((450, 200), (300, 45)),
+        self.postal_code_switch = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((450, 200), (300, 40)),
                                                                text="Скрыть почтовый индекс",
                                                                manager=manager)
         self.update_ui()
@@ -67,15 +72,29 @@ class Map:
     # методы move_right и и прочие move методы только рассчитывают новые координаты
     def move(self, move):
         moves = {pygame.K_LEFT: self.move_left, pygame.K_RIGHT: self.move_right, pygame.K_UP: self.move_up,
-                 pygame.K_DOWN: self.move_down}
+                 pygame.K_DOWN: self.move_down, pygame.K_1: self.change_to_hybrid, pygame.K_2: self.change_to_sputnik, pygame.K_3: self.change_to_scheme}
         if move not in moves:
             return
-        long, lat = self.params['ll']
-        long_spn, lat_spn = self.params['spn']
-        new_long, new_lat = moves[move](long, lat, long_spn, lat_spn)
-        self.params['ll'] = new_long, new_lat
-        self.update_ui()
-        self.request()
+        if move in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
+            long, lat = self.params['ll']
+            long_spn, lat_spn = self.params['spn']
+            new_long, new_lat = moves[move](long, lat, long_spn, lat_spn)
+            self.params['ll'] = new_long, new_lat
+            self.update_ui()
+            self.request()
+        else:
+            self.params['l'] = moves[move]()
+            self.update_ui()
+            self.request()
+
+    def change_to_hybrid(self):
+        return self.map_types[2]
+
+    def change_to_sputnik(self):
+        return self.map_types[1]
+
+    def change_to_scheme(self):
+        return self.map_types[0]
 
     def move_right(self, long, lat, long_spn, lat_spn):
         new_long = long + long_spn * 2
@@ -161,7 +180,7 @@ class Map:
     def on_key_pressed(self, key):
         valid_actions = {pygame.K_PAGEUP: self.scale_up, pygame.K_PAGEDOWN: self.scale_down,
                          pygame.K_LEFT: self.move, pygame.K_RIGHT: self.move, pygame.K_UP: self.move,
-                         pygame.K_DOWN: self.move}
+                         pygame.K_DOWN: self.move, pygame.K_1: self.move, pygame.K_2: self.move, pygame.K_3: self.move}
         if key in valid_actions:
             valid_actions[key](key)
 

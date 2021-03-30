@@ -7,7 +7,7 @@ def geocode(address=None, ll=None):
     # Собираем запрос для геокодера.
     if address:
         geoc = address
-    elif ll:
+    else:
         geoc = ll
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/"
     geocoder_params = {
@@ -64,7 +64,7 @@ def get_coordinates(address):
 
 # Получаем параметры объекта для рисования карты вокруг него.
 def get_ll_span(address):
-    toponym = geocode(address)
+    toponym = geocode(address, None)
     if not toponym:
         return None, None
 

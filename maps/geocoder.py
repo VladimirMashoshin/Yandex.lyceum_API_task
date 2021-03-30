@@ -50,7 +50,7 @@ def geocode(address=None, ll=None):
 
 # Получаем координаты объекта по его адресу и его полный адрес с почтовым индексом.
 def get_coordinates(address):
-    toponym, full_address, postal_code = geocode(address)
+    toponym, full_address, postal_code = geocode(address, None)
     if not toponym:
         # raise NotADirectoryError("Такого места не существует!")
         return None, None, None

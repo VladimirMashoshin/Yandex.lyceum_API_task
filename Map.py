@@ -208,6 +208,7 @@ class Map:
                 self.params['ll'] = new_lon, new_lat
                 strok = str(new_lon) + ',' + str(new_lat)
                 self.flags.append(strok)
+                self.coords_input.text = ', '.join(self.params)
                 self.search_input.text = str(geocode(None, strok)[1])
                 self.address_input.text = str(geocode(None, strok)[1])
                 self.update_ui()

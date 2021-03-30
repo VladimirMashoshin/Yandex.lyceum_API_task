@@ -184,7 +184,6 @@ class Map:
             pos_x, pos_y = pos
             map_x, map_y = self.map_pos
             width, height = self.map_size
-
             if map_x <= pos_x <= map_x + width and map_y <= pos_y <= map_y + height:
                 # позиция клика относительно карты в пикселях
                 x, y = pos[0] - self.map_pos[0], pos[1] - self.map_pos[1]
@@ -207,35 +206,14 @@ class Map:
                 lon, lat = self.params['ll']
                 new_lon, new_lat = lon - offset_x_degree, lat + offset_y_degree
                 self.params['ll'] = new_lon, new_lat
+                strok = str(new_lon) + ',' + str(new_lat)
+                self.flags.append(strok)
+                self.search_input.text = str(geocode(None, strok)[1])
+                self.address_input.text = str(geocode(None, strok)[1])
                 self.update_ui()
                 self.request()
         elif button == 3:
-            pos_x, pos_y = pos
-            map_x, map_y = self.map_pos
-            width, height = self.map_size
-
-            if map_x <= pos_x <= map_x + width and map_y <= pos_y <= map_y + height:
-                # позиция клика относительно карты в пикселях
-                x, y = pos[0] - self.map_pos[0], pos[1] - self.map_pos[1]
-                # центр карты в пикселях
-                center_x, center_y = width // 2, height // 2
-                # ширина области карты в десятичных градусах
-                width_spn = self.params['spn'][0] * 4
-                # высота области карты в десятичных градусах
-                height_spn = self.params['spn'][1] * 2
-                # переводим пиксели в градусы
-                one_px_x_degree = width_spn / width
-                one_px_y_degree = height_spn / height
-                # смещение в пикселях относительно центра
-                offset_x, offset_y = center_x - x, center_y - y
-                # смещение в градусах относительно центра
-                offset_x_degree = offset_x * one_px_x_degree
-                offset_y_degree = offset_y * one_px_y_degree
-
-                # задаем новые координаты центра (старые -/+ смещение)
-                lon, lat = self.params['ll']
-                new_lon, new_lat = lon - offset_x_degree, lat + offset_y_degree
-                print(find_business(ll=(new_lon, new_lat), spn=(0.00001, 0.00001), request=""))
+            pass
 
     # дисперчер обработки нажатия клавиш пользователем
     def on_key_pressed(self, key):

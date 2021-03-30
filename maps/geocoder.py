@@ -3,17 +3,20 @@ import requests
 API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
 
 
-def geocode(address):
+def geocode(address=None, ll=None):
     # Собираем запрос для геокодера.
+    if address:
+        geoc = address
+    elif ll:
+        geoc = ll
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/"
     geocoder_params = {
         "apikey": API_KEY,
-        "geocode": address,
+        "geocode": geoc,
         "format": "json"}
 
     # Выполняем запрос.
     response = requests.get(geocoder_request, params=geocoder_params)
-
     if response:
         # Преобразуем ответ в json-объект
         json_response = response.json()

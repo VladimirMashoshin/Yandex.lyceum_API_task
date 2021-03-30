@@ -37,7 +37,11 @@ class Map:
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(0, 150, 100, 30), manager=manager, text="Адрес:")
         pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 450, 300, 30), manager=manager,
                                     text="Управление типом карты (кнопки):")
-        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 500, 300, 30), manager=manager, text="1 - гибрид, 2 - спутник, 3 - схема")
+        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 450, 300, 30), manager=manager, text="1 - гибрид, 2 - спутник, 3 - схема")
+        pygame_gui.elements.UILabel(relative_rect=pygame.Rect(665, 500, 300, 30), manager=manager, text="Найденная организация:")
+        self.organization = pygame_gui.elements.UITextEntryLine(
+            relative_rect=pygame.Rect(615, 550, 400, 30),
+            manager=manager)
         self.coords_input = pygame_gui.elements.UITextEntryLine(
             relative_rect=pygame.Rect(110, 0, width * 3 / 4, height / 2),
             manager=manager)
@@ -214,7 +218,39 @@ class Map:
                 self.update_ui()
                 self.request()
         elif button == 3:
-            pass
+            pos_x, pos_y = pos
+            map_x, map_y = self.map_pos
+            width, height = self.map_size
+            if map_x <= pos_x <= map_x + width and map_y <= pos_y <= map_y + height:
+                # позиция клика относительно карты в пикселях
+                x, y = pos[0] - self.map_pos[0], pos[1] - self.map_pos[1]
+                # центр карты в пикселях
+                center_x, center_y = width // 2, height // 2
+                # ширина области карты в десятичных градусах
+                width_spn = self.params['spn'][0] * 4
+                # высота области карты в десятичных градусах
+                height_spn = self.params['spn'][1] * 2
+                # переводим пиксели в градусы
+                one_px_x_degree = width_spn / width
+                one_px_y_degree = height_spn / height
+                # смещение в пикселях относительно центра
+                offset_x, offset_y = center_x - x, center_y - y
+                # смещение в градусах относительно центра
+                offset_x_degree = offset_x * one_px_x_degree
+                offset_y_degree = offset_y * one_px_y_degree
+
+                # задаем новые координаты центра (старые -/+ смещение)
+                lon, lat = self.params['ll']
+                new_lon, new_lat = lon - offset_x_degree, lat + offset_y_degree
+                self.params['ll'] = new_lon, new_lat
+                strok = str(new_lon) + ',' + str(new_lat)
+                name = find_business(strok, ','.join([str(elem) for elem in self.params['spn']]))
+                if name != 'нет':
+                    self.organization.text = str(name)
+                else:
+                    self.organization.text = "Ничего не найдено!"
+                self.update_ui()
+                self.request()
 
     # дисперчер обработки нажатия клавиш пользователем
     def on_key_pressed(self, key):
